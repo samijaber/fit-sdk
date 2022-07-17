@@ -93,8 +93,7 @@ function readData(
         temp.push(blobVal);
       }
     }
-    const newLocal = Buffer.from(temp);
-    return newLocal.toString("utf-8");
+    return Buffer.from(temp).toString("utf-8");
   }
 
   if (fDef.type === "byte_array") {
