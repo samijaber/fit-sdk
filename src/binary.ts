@@ -1,3 +1,4 @@
+// TO-DO: handle remaining TS errors
 // @ts-nocheck
 import { FIT } from "./fit";
 import { getFitMessage, getFitMessageBaseType } from "./messages";
