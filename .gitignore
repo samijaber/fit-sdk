@@ -4,3 +4,6 @@ node_modules/
 
 # macOS gitignore
 .DS_Store
+
+# build
+dist/
