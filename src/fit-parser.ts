@@ -22,7 +22,7 @@ export default class FitParser {
     const blob = new Uint8Array(getArrayBuffer(content));
 
     if (blob.length < 12) {
-      callback("File to small to be a FIT file", {});
+      callback("File too small to be a FIT file", {});
       if (!this.options.force) {
         return;
       }
