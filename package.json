@@ -54,6 +54,7 @@
     "ci:lint": "yarn run prettier:check",
     "ci:test": "yarn run test",
     "ci:build": "yarn run build",
+    "ci:type-check": "yarn run typecheck",
     "build": "esbuild src/fit-parser.ts --bundle --platform=node --outdir=dist"
   },
   "version": "1.9.3",
