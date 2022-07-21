@@ -1,0 +1,123 @@
+// Vitest Snapshot v1
+
+exports[`fit parser tests (Structured Workouts) > check test-1 1`] = `
+{
+  "course_points": [],
+  "definitions": [
+    {},
+    {},
+    {},
+    {},
+  ],
+  "developer_data_ids": [],
+  "device_infos": [],
+  "devices": [],
+  "dive_gases": [],
+  "events": [],
+  "field_descriptions": [],
+  "file_creator": {
+    "software_version": 1,
+  },
+  "file_ids": [
+    {
+      "manufacturer": 0,
+      "product": 0,
+      "serial_number": 665424,
+      "time_created": 2022-06-12T12:51:18.000Z,
+      "type": "workout",
+    },
+  ],
+  "hrv": [],
+  "laps": [],
+  "lengths": [],
+  "monitor_info": [],
+  "monitors": [],
+  "profileVersion": 2116,
+  "protocolVersion": 32,
+  "records": [],
+  "sessions": [],
+  "sports": [],
+  "stress": [],
+  "workout": {
+    "num_valid_steps": 5,
+    "sport": "running",
+    "wkt_name": "testing",
+  },
+  "workout_step": {
+    "custom_target_value_high": 1278,
+    "custom_target_value_low": 1231,
+    "duration_type": "time",
+    "duration_value": 900000,
+    "intensity": "cooldown",
+    "message_index": {
+      "0": false,
+      "reserved": false,
+      "selected": false,
+      "value": 4,
+    },
+    "target_type": "power",
+    "target_value": 0,
+  },
+}
+`;
+
+exports[`fit parser tests (Structured Workouts) > check test-2 1`] = `
+{
+  "course_points": [],
+  "definitions": [
+    {},
+    {},
+    {},
+    {},
+  ],
+  "developer_data_ids": [],
+  "device_infos": [],
+  "devices": [],
+  "dive_gases": [],
+  "events": [],
+  "field_descriptions": [],
+  "file_creator": {
+    "software_version": 1,
+  },
+  "file_ids": [
+    {
+      "manufacturer": 0,
+      "product": 0,
+      "serial_number": 666103,
+      "time_created": 2022-06-12T12:51:10.000Z,
+      "type": "workout",
+    },
+  ],
+  "hrv": [],
+  "laps": [],
+  "lengths": [],
+  "monitor_info": [],
+  "monitors": [],
+  "profileVersion": 2116,
+  "protocolVersion": 32,
+  "records": [],
+  "sessions": [],
+  "sports": [],
+  "stress": [],
+  "workout": {
+    "num_valid_steps": 8,
+    "sport": "running",
+    "wkt_name": "W17Q2",
+  },
+  "workout_step": {
+    "custom_target_value_high": 1247,
+    "custom_target_value_low": 1200,
+    "duration_type": "distance",
+    "duration_value": 321868,
+    "intensity": "cooldown",
+    "message_index": {
+      "0": false,
+      "reserved": false,
+      "selected": false,
+      "value": 7,
+    },
+    "target_type": "power",
+    "target_value": 0,
+  },
+}
+`;

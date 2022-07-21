@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import fs from "fs";
 
 describe("fit parser tests (Structured Workouts)", function () {
-  it("expects to retrieve a FIT object", () =>
+  it("check test-1", () =>
     new Promise((done) => {
       const fitParser = new FitParser({ force: true });
       fs.readFile("./test/structured-workouts/test-1.fit", (err, buffer) => {
@@ -14,14 +14,14 @@ describe("fit parser tests (Structured Workouts)", function () {
           if (fitError) {
             throw "Error parsing";
           }
-          expect(fitObject).to.be.a("object");
-          expect(fitObject).to.have.property("sessions");
+          console.log(fitObject);
+          expect(fitObject).toMatchSnapshot();
           done(true);
         });
       });
     }));
 
-  it("expects longitude to be in the range -180 to +180", () =>
+  it("check test-2", () =>
     new Promise((done) => {
       const fitParser = new FitParser({ force: true });
       fs.readFile("./test/structured-workouts/test-2.fit", (err, buffer) => {
@@ -32,7 +32,8 @@ describe("fit parser tests (Structured Workouts)", function () {
           if (fitError) {
             throw "Error parsing";
           }
-          expect(fitObject).to.have.property("records");
+          console.log(fitObject);
+          expect(fitObject).toMatchSnapshot();
           done(true);
         });
       });
