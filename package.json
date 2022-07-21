@@ -45,7 +45,7 @@
     "url": "git+ssh://git@github.com/jimmykane/fit-parser.git"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc",
     "typecheck:watch": "yarn run tsc --watch",
     "prettier": "prettier --write .",
     "prettier:check": "prettier --check .",
