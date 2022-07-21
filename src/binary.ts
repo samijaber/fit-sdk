@@ -1,9 +1,7 @@
-// TO-DO: handle remaining TS errors
-// @ts-nocheck
-import { FIT } from "./fit";
+import { Fit, FIT, FitMessageNumber, FitTypes, FitTypesKey } from "./fit";
 import { getFitMessage, getFitMessageBaseType } from "./messages";
 import { Buffer } from "buffer";
-import { FitParserOptions } from "./types";
+import { FitParserOptions, Unit } from "./types";
 
 export function addEndian(littleEndian: boolean | undefined, bytes: any[]) {
   let result = 0;
@@ -131,26 +129,30 @@ function formatByType(
         scale ? dataItem / scale + offset : dataItem
       );
     default:
-      if (!FIT.types[type]) {
+      const fitType = FIT.types[type as FitTypesKey];
+
+      if (!fitType) {
         return data;
       }
       // Quick check for a mask
       var values = [];
-      for (var key in FIT.types[type]) {
-        if (FIT.types[type].hasOwnProperty(key)) {
-          values.push(FIT.types[type][key]);
+      for (var key in fitType) {
+        if (fitType.hasOwnProperty(key)) {
+          values.push((fitType as any)[key]);
         }
       }
       if (values.indexOf("mask") === -1) {
-        return FIT.types[type][data];
+        return (fitType as any)[data as any];
       }
-      var dataItem = {};
-      for (var key in FIT.types[type]) {
-        if (FIT.types[type].hasOwnProperty(key)) {
-          if (FIT.types[type][key] === "mask") {
-            dataItem.value = data & key;
+      var dataItem: any = {};
+      for (var key in fitType) {
+        if (fitType.hasOwnProperty(key)) {
+          const fitTypeKey = (fitType as any)[key];
+          const dataNKey = (data as any) & (key as any);
+          if (fitTypeKey === "mask") {
+            dataItem.value = dataNKey;
           } else {
-            dataItem[FIT.types[type][key]] = !!((data & key) >> 7); // Not sure if we need the >> 7 and casting to boolean but from all the masked props of fields so far this seems to be the case
+            dataItem[fitTypeKey] = !!(dataNKey >> 7); // Not sure if we need the >> 7 and casting to boolean but from all the masked props of fields so far this seems to be the case
           }
         }
       }
@@ -202,12 +204,12 @@ function isInvalidValue(
   }
 }
 
-function convertTo(
+function convertTo<T extends keyof Fit["options"]>(
   data: number,
-  unitsList: string,
-  speedUnit: string | number
+  unitsList: T,
+  speedUnit: keyof Fit["options"][T]
 ) {
-  const unitObj = FIT.options[unitsList][speedUnit];
+  const unitObj: Unit | undefined = FIT.options[unitsList][speedUnit] as any;
   return unitObj ? data * unitObj.multiplier + unitObj.offset : data;
 }
 
@@ -259,7 +261,7 @@ function applyOptions(data: number, field: any, options: FitParserOptions) {
 export function readRecord(
   blob: Uint8Array,
   messageTypes: any[],
-  developerFields: { [x: string]: { [x: string]: {} } },
+  developerFields: { [x: string]: { [x: string]: any } },
   startIndex: number,
   options: FitParserOptions,
   startDate: number,
@@ -297,7 +299,9 @@ export function readRecord(
       fieldDefs: [] as any[],
     };
 
-    const message = getFitMessage(mTypeDef.globalMessageNumber);
+    const message = getFitMessage(
+      mTypeDef.globalMessageNumber as FitMessageNumber
+    );
 
     for (let i = 0; i < numberOfFields; i++) {
       const fDefIndex = startIndex + 6 + i * 3;
@@ -329,10 +333,13 @@ export function readRecord(
 
         const devDef = developerFields[devDataIndex][fieldNum];
 
-        const baseType = devDef.fit_base_type_id;
+        const baseType: keyof FitTypes["fit_base_type"] =
+          devDef.fit_base_type_id;
+
+        const fitBaseType = FIT.types.fit_base_type[baseType];
 
         const fDef = {
-          type: FIT.types.fit_base_type[baseType],
+          type: fitBaseType,
           fDefNo: fieldNum,
           size: size,
           endianAbility: (baseType & 128) === 128,

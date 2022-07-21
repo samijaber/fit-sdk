@@ -6,36 +6,36 @@ export interface Attributes {
   units: string;
 }
 
-export interface Unit {
-  multiplier: number;
-  offset: number;
-}
+// interface Unit {
+//   multiplier: number;
+//   offset: number;
+// }
 
-export interface Units {
-  [index: string]: Unit;
-}
+// interface Units {
+//   [index: string]: Unit;
+// }
 
-export interface Message {
-  name: string;
-  [index: number]: Attributes;
-}
+// interface Message {
+//   name: string;
+//   [index: number]: Attributes;
+// }
 
-export interface Fit {
-  scConst: number;
-  options: {
-    speedUnits: Units;
-    lengthUnits: Units;
-    temperatureUnits: Units;
-  };
-  messages: {
-    [index: number]: Message;
-  };
-  types: {
-    [index: string]: {
-      [index: number]: string | number;
-    };
-  };
-}
+// interface Fit {
+//   scConst: number;
+//   options: {
+//     speedUnits: Units;
+//     lengthUnits: Units;
+//     temperatureUnits: Units;
+//   };
+//   messages: {
+//     [index: number]: Message;
+//   };
+//   types: {
+//     [index: string]: {
+//       [index: number]: string | number;
+//     };
+//   };
+// }
 
 export interface FitParserOptions {
   force?: any;

@@ -1,4 +1,4 @@
-import { Fit } from "./types";
+// import { Fit } from "./types";
 
 // some unit conversion constants
 const metersInOneKilometer = 1000;
@@ -6,7 +6,7 @@ const secondsInOneHour = 3600;
 // according to https://en.wikipedia.org/wiki/Mile
 const metersInOneMile = 1609.344;
 
-export const FIT: Fit = {
+export const FIT = {
   scConst: 180 / Math.pow(2, 31),
   options: {
     speedUnits: {
@@ -7825,10 +7825,14 @@ export const FIT: Fit = {
       12: "assioma_duo",
     },
   },
-};
+} as const;
 
+export type Fit = typeof FIT;
 type FitMessage = Fit["messages"];
 export type FitMessageNumber = keyof FitMessage;
+
+export type FitTypes = Fit["types"];
+export type FitTypesKey = keyof FitTypes;
 
 export type FieldsForMessageNumber<N extends FitMessageNumber> =
   keyof FitMessage[N];
