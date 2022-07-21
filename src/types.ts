@@ -6,10 +6,10 @@ export interface Attributes {
   units: string;
 }
 
-// interface Unit {
-//   multiplier: number;
-//   offset: number;
-// }
+export interface Unit {
+  multiplier: number;
+  offset: number;
+}
 
 // interface Units {
 //   [index: string]: Unit;
