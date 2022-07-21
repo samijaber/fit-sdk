@@ -51,7 +51,7 @@
     "prettier:check": "prettier --check .",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "ci:lint": "yarn run prettier-check",
+    "ci:lint": "yarn run prettier:check",
     "ci:test": "yarn run test",
     "ci:build": "yarn run build",
     "build": "esbuild src/fit-parser.ts --bundle --platform=node --outdir=dist"
