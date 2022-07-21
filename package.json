@@ -56,7 +56,7 @@
     "ci:build": "yarn run build",
     "build": "esbuild src/fit-parser.ts --bundle --platform=node --outdir=dist"
   },
-  "version": "1.8.4",
+  "version": "1.9.3",
   "dependencies": {
     "buffer": "^5.1.0"
   }
