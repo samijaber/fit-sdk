@@ -264,9 +264,11 @@ type Record = { messageType: string; nextIndex: number; message: Message };
 
 type RecordReaderOptions = {
   blob: Uint8Array;
+  options: FitParserOptions;
+
+  // both of these don't seem to be used for anything
   messageTypes?: any[];
   developerFields?: { [x: string]: { [x: string]: any } };
-  options: FitParserOptions;
 };
 
 type RecordReaderInnerOptions = {
@@ -275,14 +277,16 @@ type RecordReaderInnerOptions = {
   startIndex: number;
 };
 
+export type RecordReader = (args: RecordReaderInnerOptions) => Record;
+
 export const readRecord =
   ({
     blob,
     messageTypes = [],
     developerFields = {},
     options,
-  }: RecordReaderOptions) =>
-  ({ startIndex, startDate, pausedTime }: RecordReaderInnerOptions): Record => {
+  }: RecordReaderOptions): RecordReader =>
+  ({ startIndex, startDate, pausedTime }) => {
     const recordHeader = blob[startIndex];
     let localMessageType = recordHeader & 15;
 
