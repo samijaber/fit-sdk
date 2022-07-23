@@ -258,15 +258,23 @@ function applyOptions(data: number, field: any, options: FitParserOptions) {
   }
 }
 
-export function readRecord(
-  blob: Uint8Array,
-  messageTypes: any[],
-  developerFields: { [x: string]: { [x: string]: any } },
-  startIndex: number,
-  options: FitParserOptions,
-  startDate: number,
-  pausedTime: number
-): { messageType: string; nextIndex: number; message?: any } {
+export function readRecord({
+  blob,
+  messageTypes,
+  developerFields,
+  startIndex,
+  options,
+  startDate,
+  pausedTime,
+}: {
+  blob: Uint8Array;
+  messageTypes: any[];
+  developerFields: { [x: string]: { [x: string]: any } };
+  startIndex: number;
+  options: FitParserOptions;
+  startDate: number;
+  pausedTime: number;
+}): { messageType: string; nextIndex: number; message?: any } {
   const recordHeader = blob[startIndex];
   let localMessageType = recordHeader & 15;
 

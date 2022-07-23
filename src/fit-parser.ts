@@ -21,6 +21,10 @@ export default class FitParser {
   ) {
     const blob = new Uint8Array(getArrayBuffer(content));
 
+    /**
+     * Being file validations
+     */
+
     if (blob.length < 12) {
       callback("File too small to be a FIT file", {});
       if (!this.options.force) {
@@ -79,6 +83,10 @@ export default class FitParser {
       }
     }
 
+    /**
+     * End file validations
+     */
+
     const fitObj: any = {};
     fitObj.protocolVersion = protocolVersion;
     fitObj.profileVersion = profileVersion;
@@ -120,15 +128,15 @@ export default class FitParser {
         nextIndex,
         messageType,
         message = {},
-      } = readRecord(
+      } = readRecord({
         blob,
         messageTypes,
         developerFields,
-        loopIndex,
-        this.options,
+        startIndex: loopIndex,
+        options: this.options,
         startDate,
-        pausedTime
-      );
+        pausedTime,
+      });
       loopIndex = nextIndex;
 
       switch (messageType) {
