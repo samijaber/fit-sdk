@@ -258,211 +258,220 @@ function applyOptions(data: number, field: any, options: FitParserOptions) {
   }
 }
 
-export function readRecord({
-  blob,
-  messageTypes,
-  developerFields,
-  startIndex,
-  options,
-  startDate,
-  pausedTime,
-}: {
+type Dictionary<T> = { [key: string]: T };
+type Message = Dictionary<any>;
+type Record = { messageType: string; nextIndex: number; message: Message };
+
+type RecordReaderOptions = {
   blob: Uint8Array;
-  messageTypes: any[];
-  developerFields: { [x: string]: { [x: string]: any } };
-  startIndex: number;
+  messageTypes?: any[];
+  developerFields?: { [x: string]: { [x: string]: any } };
   options: FitParserOptions;
+};
+
+type RecordReaderInnerOptions = {
   startDate: number;
   pausedTime: number;
-}): { messageType: string; nextIndex: number; message?: any } {
-  const recordHeader = blob[startIndex];
-  let localMessageType = recordHeader & 15;
+  startIndex: number;
+};
 
-  if ((recordHeader & CompressedHeaderMask) === CompressedHeaderMask) {
-    //compressed timestamp
+export const readRecord =
+  ({
+    blob,
+    messageTypes = [],
+    developerFields = {},
+    options,
+  }: RecordReaderOptions) =>
+  ({ startIndex, startDate, pausedTime }: RecordReaderInnerOptions): Record => {
+    const recordHeader = blob[startIndex];
+    let localMessageType = recordHeader & 15;
 
-    var timeoffset = recordHeader & CompressedTimeMask;
-    timestamp += (timeoffset - lastTimeOffset) & CompressedTimeMask;
-    lastTimeOffset = timeoffset;
+    if ((recordHeader & CompressedHeaderMask) === CompressedHeaderMask) {
+      //compressed timestamp
 
-    localMessageType = (recordHeader & CompressedLocalMesgNumMask) >> 5;
-  } else if ((recordHeader & 64) === 64) {
-    // is definition message
-    // startIndex + 1 is reserved
+      var timeoffset = recordHeader & CompressedTimeMask;
+      timestamp += (timeoffset - lastTimeOffset) & CompressedTimeMask;
+      lastTimeOffset = timeoffset;
 
-    const hasDeveloperData = (recordHeader & 32) === 32;
-    const lEnd = blob[startIndex + 2] === 0;
-    const numberOfFields = blob[startIndex + 5];
-    const numberOfDeveloperDataFields = hasDeveloperData
-      ? blob[startIndex + 5 + numberOfFields * 3 + 1]
-      : 0;
+      localMessageType = (recordHeader & CompressedLocalMesgNumMask) >> 5;
+    } else if ((recordHeader & 64) === 64) {
+      // is definition message
+      // startIndex + 1 is reserved
 
-    const mTypeDef = {
-      littleEndian: lEnd,
-      globalMessageNumber: addEndian(lEnd, [
-        blob[startIndex + 3],
-        blob[startIndex + 4],
-      ]),
-      numberOfFields: numberOfFields + numberOfDeveloperDataFields,
-      fieldDefs: [] as any[],
-    };
+      const hasDeveloperData = (recordHeader & 32) === 32;
+      const lEnd = blob[startIndex + 2] === 0;
+      const numberOfFields = blob[startIndex + 5];
+      const numberOfDeveloperDataFields = hasDeveloperData
+        ? blob[startIndex + 5 + numberOfFields * 3 + 1]
+        : 0;
 
-    const message = getFitMessage(
-      mTypeDef.globalMessageNumber as FitMessageNumber
-    );
-
-    for (let i = 0; i < numberOfFields; i++) {
-      const fDefIndex = startIndex + 6 + i * 3;
-      const baseType = blob[fDefIndex + 2];
-      const { field, type } = message.getAttributes(blob[fDefIndex]);
-      const fDef = {
-        type,
-        fDefNo: blob[fDefIndex],
-        size: blob[fDefIndex + 1],
-        endianAbility: (baseType & 128) === 128,
+      const mTypeDef = {
         littleEndian: lEnd,
-        baseTypeNo: baseType & 15,
-        name: field,
-        dataType: getFitMessageBaseType(baseType & 15),
+        globalMessageNumber: addEndian(lEnd, [
+          blob[startIndex + 3],
+          blob[startIndex + 4],
+        ]),
+        numberOfFields: numberOfFields + numberOfDeveloperDataFields,
+        fieldDefs: [] as any[],
       };
 
-      mTypeDef.fieldDefs.push(fDef);
-    }
+      const message = getFitMessage(
+        mTypeDef.globalMessageNumber as FitMessageNumber
+      );
 
-    // numberOfDeveloperDataFields = 0 so it wont crash here and wont loop
-    for (let i = 0; i < numberOfDeveloperDataFields; i++) {
-      // If we fail to parse then try catch
-      try {
-        const fDefIndex = startIndex + 6 + numberOfFields * 3 + 1 + i * 3;
-
-        const fieldNum = blob[fDefIndex];
-        const size = blob[fDefIndex + 1];
-        const devDataIndex = blob[fDefIndex + 2];
-
-        const devDef = developerFields[devDataIndex][fieldNum];
-
-        const baseType: keyof FitTypes["fit_base_type"] =
-          devDef.fit_base_type_id;
-
-        const fitBaseType = FIT.types.fit_base_type[baseType];
-
+      for (let i = 0; i < numberOfFields; i++) {
+        const fDefIndex = startIndex + 6 + i * 3;
+        const baseType = blob[fDefIndex + 2];
+        const { field, type } = message.getAttributes(blob[fDefIndex]);
         const fDef = {
-          type: fitBaseType,
-          fDefNo: fieldNum,
-          size: size,
+          type,
+          fDefNo: blob[fDefIndex],
+          size: blob[fDefIndex + 1],
           endianAbility: (baseType & 128) === 128,
           littleEndian: lEnd,
           baseTypeNo: baseType & 15,
-          name: devDef.field_name,
+          name: field,
           dataType: getFitMessageBaseType(baseType & 15),
-          scale: devDef.scale || 1,
-          offset: devDef.offset || 0,
-          developerDataIndex: devDataIndex,
-          isDeveloperField: true,
         };
 
         mTypeDef.fieldDefs.push(fDef);
-      } catch (e) {
-        if (options.force) {
-          continue;
-        }
-        throw e;
       }
+
+      // numberOfDeveloperDataFields = 0 so it wont crash here and wont loop
+      for (let i = 0; i < numberOfDeveloperDataFields; i++) {
+        // If we fail to parse then try catch
+        try {
+          const fDefIndex = startIndex + 6 + numberOfFields * 3 + 1 + i * 3;
+
+          const fieldNum = blob[fDefIndex];
+          const size = blob[fDefIndex + 1];
+          const devDataIndex = blob[fDefIndex + 2];
+
+          const devDef = developerFields[devDataIndex][fieldNum];
+
+          const baseType: keyof FitTypes["fit_base_type"] =
+            devDef.fit_base_type_id;
+
+          const fitBaseType = FIT.types.fit_base_type[baseType];
+
+          const fDef = {
+            type: fitBaseType,
+            fDefNo: fieldNum,
+            size: size,
+            endianAbility: (baseType & 128) === 128,
+            littleEndian: lEnd,
+            baseTypeNo: baseType & 15,
+            name: devDef.field_name,
+            dataType: getFitMessageBaseType(baseType & 15),
+            scale: devDef.scale || 1,
+            offset: devDef.offset || 0,
+            developerDataIndex: devDataIndex,
+            isDeveloperField: true,
+          };
+
+          mTypeDef.fieldDefs.push(fDef);
+        } catch (e) {
+          if (options.force) {
+            continue;
+          }
+          throw e;
+        }
+      }
+
+      messageTypes[localMessageType] = mTypeDef;
+
+      const nextIndex = startIndex + 6 + mTypeDef.numberOfFields * 3;
+      const nextIndexWithDeveloperData = nextIndex + 1;
+
+      return {
+        messageType: "definition",
+        nextIndex: hasDeveloperData ? nextIndexWithDeveloperData : nextIndex,
+        message: {},
+      };
     }
 
-    messageTypes[localMessageType] = mTypeDef;
+    const messageType = messageTypes[localMessageType] || messageTypes[0];
 
-    const nextIndex = startIndex + 6 + mTypeDef.numberOfFields * 3;
-    const nextIndexWithDeveloperData = nextIndex + 1;
+    // TODO: handle compressed header ((recordHeader & 128) == 128)
 
-    return {
-      messageType: "definition",
-      nextIndex: hasDeveloperData ? nextIndexWithDeveloperData : nextIndex,
-    };
-  }
+    // uncompressed header
+    let messageSize = 0;
+    let readDataFromIndex = startIndex + 1;
+    const fields: any = {};
+    const message = getFitMessage(messageType.globalMessageNumber);
 
-  const messageType = messageTypes[localMessageType] || messageTypes[0];
+    for (let i = 0; i < messageType.fieldDefs.length; i++) {
+      const fDef = messageType.fieldDefs[i];
+      const data = readData(blob, fDef, readDataFromIndex, options);
 
-  // TODO: handle compressed header ((recordHeader & 128) == 128)
+      if (!isInvalidValue(data, fDef.type)) {
+        if (fDef.isDeveloperField) {
+          const field = fDef.name;
+          const type = fDef.type;
+          const scale = fDef.scale;
+          const offset = fDef.offset;
 
-  // uncompressed header
-  let messageSize = 0;
-  let readDataFromIndex = startIndex + 1;
-  const fields: any = {};
-  const message = getFitMessage(messageType.globalMessageNumber);
-
-  for (let i = 0; i < messageType.fieldDefs.length; i++) {
-    const fDef = messageType.fieldDefs[i];
-    const data = readData(blob, fDef, readDataFromIndex, options);
-
-    if (!isInvalidValue(data, fDef.type)) {
-      if (fDef.isDeveloperField) {
-        const field = fDef.name;
-        const type = fDef.type;
-        const scale = fDef.scale;
-        const offset = fDef.offset;
-
-        fields[fDef.name] = applyOptions(
-          formatByType(data, type, scale, offset),
-          field,
-          options
-        );
-      } else {
-        const { field, type, scale, offset } = message.getAttributes(
-          fDef.fDefNo
-        );
-
-        if (field !== "unknown" && field !== "" && field !== undefined) {
-          fields[field] = applyOptions(
-            formatByType(data, type, scale as number, offset as number),
+          fields[fDef.name] = applyOptions(
+            formatByType(data, type, scale, offset),
             field,
             options
           );
+        } else {
+          const { field, type, scale, offset } = message.getAttributes(
+            fDef.fDefNo
+          );
+
+          if (field !== "unknown" && field !== "" && field !== undefined) {
+            fields[field] = applyOptions(
+              formatByType(data, type, scale as number, offset as number),
+              field,
+              options
+            );
+          }
+        }
+
+        if (message.name === "record" && options.elapsedRecordField) {
+          fields.elapsed_time = (fields.timestamp - startDate) / 1000;
+          fields.timer_time = fields.elapsed_time - pausedTime;
         }
       }
 
-      if (message.name === "record" && options.elapsedRecordField) {
-        fields.elapsed_time = (fields.timestamp - startDate) / 1000;
-        fields.timer_time = fields.elapsed_time - pausedTime;
+      readDataFromIndex += fDef.size;
+      messageSize += fDef.size;
+    }
+
+    if (message.name === "field_description") {
+      developerFields[fields.developer_data_index] =
+        developerFields[fields.developer_data_index] || [];
+      developerFields[fields.developer_data_index][
+        fields.field_definition_number
+      ] = fields;
+    }
+
+    if (message.name === "monitoring") {
+      //we need to keep the raw timestamp value so we can calculate subsequent timestamp16 fields
+      if (fields.timestamp) {
+        monitoring_timestamp = fields.timestamp;
+        fields.timestamp = new Date(fields.timestamp * 1000 + GarminTimeOffset);
+      }
+      if (fields.timestamp16 && !fields.timestamp) {
+        monitoring_timestamp +=
+          (fields.timestamp16 - (monitoring_timestamp & 0xffff)) & 0xffff;
+        //fields.timestamp = monitoring_timestamp;
+        fields.timestamp = new Date(
+          monitoring_timestamp * 1000 + GarminTimeOffset
+        );
       }
     }
 
-    readDataFromIndex += fDef.size;
-    messageSize += fDef.size;
-  }
+    const result = {
+      messageType: message.name,
+      nextIndex: startIndex + messageSize + 1,
+      message: fields,
+    };
 
-  if (message.name === "field_description") {
-    developerFields[fields.developer_data_index] =
-      developerFields[fields.developer_data_index] || [];
-    developerFields[fields.developer_data_index][
-      fields.field_definition_number
-    ] = fields;
-  }
-
-  if (message.name === "monitoring") {
-    //we need to keep the raw timestamp value so we can calculate subsequent timestamp16 fields
-    if (fields.timestamp) {
-      monitoring_timestamp = fields.timestamp;
-      fields.timestamp = new Date(fields.timestamp * 1000 + GarminTimeOffset);
-    }
-    if (fields.timestamp16 && !fields.timestamp) {
-      monitoring_timestamp +=
-        (fields.timestamp16 - (monitoring_timestamp & 0xffff)) & 0xffff;
-      //fields.timestamp = monitoring_timestamp;
-      fields.timestamp = new Date(
-        monitoring_timestamp * 1000 + GarminTimeOffset
-      );
-    }
-  }
-
-  const result = {
-    messageType: message.name,
-    nextIndex: startIndex + messageSize + 1,
-    message: fields,
+    return result;
   };
-
-  return result;
-}
 
 export function getArrayBuffer(buffer: string | any[] | Buffer) {
   if (buffer instanceof ArrayBuffer) {

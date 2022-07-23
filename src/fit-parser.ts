@@ -114,8 +114,6 @@ export default class FitParser {
     let tempRecords = [];
 
     let loopIndex = headerLength;
-    const messageTypes: any = [];
-    const developerFields: any = [];
 
     const isModeCascade = this.options.mode === "cascade";
     const isCascadeNeeded = isModeCascade || this.options.mode === "both";
@@ -123,17 +121,14 @@ export default class FitParser {
     let startDate, lastStopTimestamp;
     let pausedTime = 0;
 
+    const recordReader = readRecord({
+      blob,
+      options: this.options,
+    });
+
     while (loopIndex < crcStart) {
-      const {
-        nextIndex,
-        messageType,
-        message = {},
-      } = readRecord({
-        blob,
-        messageTypes,
-        developerFields,
+      const { nextIndex, messageType, message } = recordReader({
         startIndex: loopIndex,
-        options: this.options,
         startDate,
         pausedTime,
       });
