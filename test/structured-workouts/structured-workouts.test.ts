@@ -14,7 +14,6 @@ describe("fit parser tests (Structured Workouts)", function () {
           if (fitError) {
             throw "Error parsing";
           }
-          console.log(fitObject);
           expect(fitObject).toMatchSnapshot();
           done(true);
         });
@@ -32,7 +31,6 @@ describe("fit parser tests (Structured Workouts)", function () {
           if (fitError) {
             throw "Error parsing";
           }
-          console.log(fitObject);
           expect(fitObject).toMatchSnapshot();
           done(true);
         });
