@@ -176,7 +176,7 @@ export default class FitParser {
 
   constructor(options: Partial<FitParserOptions> = {}) {
     this.options = {
-      force: options.force != null ? options.force : true,
+      force: options.force || true,
       speedUnit: options.speedUnit || "m/s",
       lengthUnit: options.lengthUnit || "m",
       temperatureUnit: options.temperatureUnit || "°C",
