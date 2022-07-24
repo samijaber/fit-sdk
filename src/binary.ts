@@ -13,9 +13,11 @@ export function addEndian(littleEndian: boolean | undefined, bytes: any[]) {
   return result;
 }
 
-var timestamp = 0;
-var lastTimeOffset = 0;
-const CompressedTimeMask = 31;
+// unused
+// var timestamp = 0;
+// var lastTimeOffset = 0;
+
+// const CompressedTimeMask = 31;
 const CompressedLocalMesgNumMask = 0x60;
 const CompressedHeaderMask = 0x80;
 const GarminTimeOffset = 631065600000;
@@ -39,15 +41,9 @@ function readData(
     try {
       switch (fDef.type) {
         case "sint8":
-          return dataView.getInt8(
-            0
-            // fDef.littleEndian
-          );
+          return dataView.getInt8(0);
         case "uint8":
-          return dataView.getUint8(
-            0
-            // fDef.littleEndian
-          );
+          return dataView.getUint8(0);
         case "sint16":
           return dataView.getInt16(0, fDef.littleEndian);
         case "uint16":
@@ -293,9 +289,12 @@ export const readRecord =
     if ((recordHeader & CompressedHeaderMask) === CompressedHeaderMask) {
       //compressed timestamp
 
-      var timeoffset = recordHeader & CompressedTimeMask;
-      timestamp += (timeoffset - lastTimeOffset) & CompressedTimeMask;
-      lastTimeOffset = timeoffset;
+      /**
+       * all unused
+       */
+      // var timeoffset = recordHeader & CompressedTimeMask;
+      // timestamp += (timeoffset - lastTimeOffset) & CompressedTimeMask;
+      // lastTimeOffset = timeoffset;
 
       localMessageType = (recordHeader & CompressedLocalMesgNumMask) >> 5;
     } else if ((recordHeader & 64) === 64) {
