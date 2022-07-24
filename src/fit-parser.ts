@@ -36,6 +36,7 @@ const generateParsedFitObject = ({
   const file_ids = [];
   const monitor_info = [];
   const lengths = [];
+  const workout_step = [];
 
   let tempLaps = [];
   let tempLengths = [];
@@ -139,6 +140,9 @@ const generateParsedFitObject = ({
       case "stress_level":
         stress.push(message);
         break;
+      case "workout_step":
+        workout_step.push(message);
+        break;
       case "software":
         fitObj.software = message;
         break;
@@ -168,6 +172,7 @@ const generateParsedFitObject = ({
     file_ids,
     monitor_info,
     definitions,
+    workout_step,
   };
 };
 
@@ -288,6 +293,7 @@ export default class FitParser {
       file_ids,
       monitor_info,
       definitions,
+      workout_step,
     } = generateParsedFitObject({
       fitObj,
       isCascadeNeeded,
@@ -325,6 +331,7 @@ export default class FitParser {
       fitObj.file_ids = file_ids;
       fitObj.monitor_info = monitor_info;
       fitObj.definitions = definitions;
+      fitObj.workout_step = workout_step;
     }
 
     callback(null, fitObj);
