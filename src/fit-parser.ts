@@ -174,12 +174,12 @@ const generateParsedFitObject = ({
 export default class FitParser {
   options: FitParserOptions;
 
-  constructor(options: FitParserOptions = {}) {
+  constructor(options: Partial<FitParserOptions> = {}) {
     this.options = {
       force: options.force != null ? options.force : true,
       speedUnit: options.speedUnit || "m/s",
       lengthUnit: options.lengthUnit || "m",
-      temperatureUnit: options.temperatureUnit || "celsius",
+      temperatureUnit: options.temperatureUnit || "°C",
       elapsedRecordField: options.elapsedRecordField || false,
       mode: options.mode || "list",
     };

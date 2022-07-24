@@ -1,3 +1,4 @@
+import { Fit } from "./fit";
 export interface Attributes {
   field: string;
   type: string;
@@ -38,10 +39,10 @@ export interface Unit {
 // }
 
 export interface FitParserOptions {
-  force?: any;
-  speedUnit?: any;
-  lengthUnit?: any;
-  temperatureUnit?: any;
-  elapsedRecordField?: any;
-  mode?: any;
+  force: boolean;
+  speedUnit: keyof Fit["options"]["speedUnits"];
+  lengthUnit: keyof Fit["options"]["lengthUnits"];
+  temperatureUnit: keyof Fit["options"]["temperatureUnits"];
+  elapsedRecordField: boolean;
+  mode: "cascade" | "list" | "both";
 }
