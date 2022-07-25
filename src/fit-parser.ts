@@ -176,24 +176,27 @@ const generateParsedFitObject = ({
   };
 };
 
+const DEFAULT_OPTIONS: FitParserOptions = {
+  force: true,
+  speedUnit: "m/s",
+  lengthUnit: "m",
+  temperatureUnit: "°C",
+  elapsedRecordField: false,
+  mode: "list",
+};
+
+type FitObject = any;
 export default class FitParser {
   options: FitParserOptions;
 
   constructor(options: Partial<FitParserOptions> = {}) {
     this.options = {
-      force: options.force || true,
-      speedUnit: options.speedUnit || "m/s",
-      lengthUnit: options.lengthUnit || "m",
-      temperatureUnit: options.temperatureUnit || "°C",
-      elapsedRecordField: options.elapsedRecordField || false,
-      mode: options.mode || "list",
+      ...options,
+      ...DEFAULT_OPTIONS,
     };
   }
 
-  parse(
-    content: Buffer,
-    callback: (fitError: string | null, fitObject: {}) => void
-  ) {
+  parse(content: Buffer): FitObject {
     const blob = new Uint8Array(getArrayBuffer(content));
 
     /**
@@ -201,17 +204,21 @@ export default class FitParser {
      */
 
     if (blob.length < 12) {
-      callback("File too small to be a FIT file", {});
-      if (!this.options.force) {
-        return;
+      const error = new Error("File too small to be a FIT file");
+      if (this.options.force) {
+        throw error;
+      } else {
+        console.error(error);
       }
     }
 
     const headerLength = blob[0];
     if (headerLength !== 14 && headerLength !== 12) {
-      callback("Incorrect header size", {});
-      if (!this.options.force) {
-        return;
+      const error = new Error("Incorrect header size");
+      if (this.options.force) {
+        throw error;
+      } else {
+        console.error(error);
       }
     }
 
@@ -220,9 +227,11 @@ export default class FitParser {
       fileTypeString += String.fromCharCode(blob[i]);
     }
     if (fileTypeString !== ".FIT") {
-      callback("Missing '.FIT' in header", {});
-      if (!this.options.force) {
-        return;
+      const error = new Error("Missing '.FIT' in header");
+      if (this.options.force) {
+        throw error;
+      } else {
+        console.error(error);
       }
     }
 
@@ -334,6 +343,6 @@ export default class FitParser {
       fitObj.workout_step = workout_step;
     }
 
-    callback(null, fitObj);
+    return fitObj;
   }
 }

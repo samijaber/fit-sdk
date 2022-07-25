@@ -3,37 +3,17 @@ import { describe, expect, it } from "vitest";
 import fs from "fs";
 
 describe("fit parser tests (Structured Workouts)", function () {
-  it("check test-1", () =>
-    new Promise((done) => {
-      const fitParser = new FitParser();
-      fs.readFile("./test/structured-workouts/test-1.fit", (err, buffer) => {
-        if (err) {
-          throw err;
-        }
-        fitParser.parse(buffer, (fitError, fitObject) => {
-          if (fitError) {
-            throw "Error parsing";
-          }
-          expect(fitObject).toMatchSnapshot();
-          done(true);
-        });
-      });
-    }));
+  it("check test-1", () => {
+    const fitParser = new FitParser();
+    const buffer = fs.readFileSync("./test/structured-workouts/test-1.fit");
+    const fitObject = fitParser.parse(buffer);
+    expect(fitObject).toMatchSnapshot();
+  });
 
-  it("check test-2", () =>
-    new Promise((done) => {
-      const fitParser = new FitParser();
-      fs.readFile("./test/structured-workouts/test-2.fit", (err, buffer) => {
-        if (err) {
-          throw err;
-        }
-        fitParser.parse(buffer, (fitError, fitObject: any) => {
-          if (fitError) {
-            throw "Error parsing";
-          }
-          expect(fitObject).toMatchSnapshot();
-          done(true);
-        });
-      });
-    }));
+  it("check test-2", () => {
+    const fitParser = new FitParser();
+    const buffer = fs.readFileSync("./test/structured-workouts/test-2.fit");
+    const fitObject = fitParser.parse(buffer);
+    expect(fitObject).toMatchSnapshot();
+  });
 });
