@@ -5,7 +5,7 @@ import fs from "fs";
 describe("fit parser tests (Structured Workouts)", function () {
   it("check test-1", () =>
     new Promise((done) => {
-      const fitParser = new FitParser({ force: true });
+      const fitParser = new FitParser();
       fs.readFile("./test/structured-workouts/test-1.fit", (err, buffer) => {
         if (err) {
           throw err;
@@ -22,7 +22,7 @@ describe("fit parser tests (Structured Workouts)", function () {
 
   it("check test-2", () =>
     new Promise((done) => {
-      const fitParser = new FitParser({ force: true });
+      const fitParser = new FitParser();
       fs.readFile("./test/structured-workouts/test-2.fit", (err, buffer) => {
         if (err) {
           throw err;
