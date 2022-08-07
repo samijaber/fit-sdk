@@ -45,15 +45,19 @@
     "url": "git+ssh://git@github.com/jimmykane/fit-parser.git"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc",
     "typecheck:watch": "yarn run tsc --watch",
     "prettier": "prettier --write .",
     "prettier:check": "prettier --check .",
     "test": "vitest",
+    "test:watch": "vitest -w",
+    "test:update": "vitest -u",
+    "test:watch:update": "vitest -w -u",
     "coverage": "vitest run --coverage",
     "ci:lint": "yarn run prettier:check",
     "ci:test": "yarn run test",
     "ci:build": "yarn run build",
+    "ci:typecheck": "yarn run typecheck",
     "build": "esbuild src/fit-parser.ts --bundle --platform=node --outdir=dist"
   },
   "version": "1.9.3",

@@ -28,6 +28,9 @@ jobs:
       - name: Lint
         run: yarn ci:lint
 
+      - name: Typecheck
+        run: yarn ci:typecheck
+
       - name: Build
         run: yarn ci:build
 

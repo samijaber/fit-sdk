@@ -1,38 +1,224 @@
-import { getArrayBuffer, calculateCRC, readRecord } from "./binary";
+import {
+  getArrayBuffer,
+  calculateCRC,
+  readRecord,
+  RecordReader,
+} from "./binary";
 import { FitParserOptions } from "./types";
 
+const generateParsedFitObject = ({
+  fitObj,
+  isCascadeNeeded,
+  recordReader,
+  crcStart,
+  headerLength,
+}: {
+  fitObj: any;
+  isCascadeNeeded: boolean;
+  recordReader: RecordReader;
+  crcStart: number;
+  headerLength: number;
+}) => {
+  const sessions = [];
+  const laps = [];
+  const records = [];
+  const events = [];
+  const hrv = [];
+  const devices = [];
+  const applications = [];
+  const fieldDescriptions = [];
+  const dive_gases = [];
+  const course_points = [];
+  const sports = [];
+  const monitors = [];
+  const stress = [];
+  const definitions = [];
+  const file_ids = [];
+  const monitor_info = [];
+  const lengths = [];
+  const workout_step = [];
+
+  let tempLaps = [];
+  let tempLengths = [];
+  let tempRecords = [];
+
+  let loopIndex = headerLength;
+
+  let startDate, lastStopTimestamp;
+  let pausedTime = 0;
+
+  while (loopIndex < crcStart) {
+    const { nextIndex, messageType, message } = recordReader({
+      startIndex: loopIndex,
+      startDate,
+      pausedTime,
+    });
+    loopIndex = nextIndex;
+
+    switch (messageType) {
+      case "lap":
+        if (isCascadeNeeded) {
+          message.records = tempRecords;
+          tempRecords = [];
+          tempLaps.push(message);
+          message.lengths = tempLengths;
+          tempLengths = [];
+        }
+        laps.push(message);
+        break;
+      case "session":
+        if (isCascadeNeeded) {
+          message.laps = tempLaps;
+          tempLaps = [];
+        }
+        sessions.push(message);
+        break;
+      case "event":
+        if (message.event === "timer") {
+          if (message.event_type === "stop_all") {
+            lastStopTimestamp = message.timestamp;
+          } else if (message.event_type === "start" && lastStopTimestamp) {
+            pausedTime += (message.timestamp - lastStopTimestamp) / 1000;
+          }
+        }
+        events.push(message);
+        break;
+      case "length":
+        if (isCascadeNeeded) {
+          tempLengths.push(message);
+        }
+        lengths.push(message);
+        break;
+      case "hrv":
+        hrv.push(message);
+        break;
+      case "record":
+        if (!startDate) {
+          startDate = message.timestamp;
+          message.elapsed_time = 0;
+          message.timer_time = 0;
+        }
+        records.push(message);
+        if (isCascadeNeeded) {
+          tempRecords.push(message);
+        }
+        break;
+      case "field_description":
+        fieldDescriptions.push(message);
+        break;
+      case "device_info":
+        devices.push(message);
+        break;
+      case "developer_data_id":
+        applications.push(message);
+        break;
+      case "dive_gas":
+        dive_gases.push(message);
+        break;
+      case "course_point":
+        course_points.push(message);
+        break;
+      case "sport":
+        sports.push(message);
+        break;
+      case "file_id":
+        if (message) {
+          file_ids.push(message);
+        }
+        break;
+      case "definition":
+        if (message) {
+          definitions.push(message);
+        }
+        break;
+      case "monitoring":
+        monitors.push(message);
+        break;
+      case "monitoring_info":
+        monitor_info.push(message);
+        break;
+      case "stress_level":
+        stress.push(message);
+        break;
+      case "workout_step":
+        workout_step.push(message);
+        break;
+      case "software":
+        fitObj.software = message;
+        break;
+      default:
+        if (messageType !== "") {
+          fitObj[messageType] = message;
+        }
+        break;
+    }
+  }
+
+  return {
+    sessions,
+    events,
+    hrv,
+    devices,
+    applications,
+    fieldDescriptions,
+    sports,
+    laps,
+    lengths,
+    records,
+    dive_gases,
+    course_points,
+    monitors,
+    stress,
+    file_ids,
+    monitor_info,
+    definitions,
+    workout_step,
+  };
+};
+
+const DEFAULT_OPTIONS: FitParserOptions = {
+  force: true,
+  speedUnit: "m/s",
+  lengthUnit: "m",
+  temperatureUnit: "°C",
+  elapsedRecordField: false,
+  mode: "list",
+};
+
+type FitObject = any;
 export default class FitParser {
   options: FitParserOptions;
 
-  constructor(options: FitParserOptions = {}) {
+  constructor(options: Partial<FitParserOptions> = {}) {
     this.options = {
-      force: options.force != null ? options.force : true,
-      speedUnit: options.speedUnit || "m/s",
-      lengthUnit: options.lengthUnit || "m",
-      temperatureUnit: options.temperatureUnit || "celsius",
-      elapsedRecordField: options.elapsedRecordField || false,
-      mode: options.mode || "list",
+      ...options,
+      ...DEFAULT_OPTIONS,
     };
   }
 
-  parse(
-    content: Buffer,
-    callback: (fitError: string | null, fitObject: {}) => void
-  ) {
+  parse(content: Buffer): FitObject {
     const blob = new Uint8Array(getArrayBuffer(content));
 
+    /**
+     * Being file validations
+     */
+
     if (blob.length < 12) {
-      callback("File too small to be a FIT file", {});
-      if (!this.options.force) {
-        return;
+      const error = new Error("File too small to be a FIT file");
+      if (this.options.force) {
+        throw error;
+      } else {
+        console.error(error);
       }
     }
 
     const headerLength = blob[0];
     if (headerLength !== 14 && headerLength !== 12) {
-      callback("Incorrect header size", {});
-      if (!this.options.force) {
-        return;
+      const error = new Error("Incorrect header size");
+      if (this.options.force) {
+        throw error;
+      } else {
+        console.error(error);
       }
     }
 
@@ -41,9 +227,11 @@ export default class FitParser {
       fileTypeString += String.fromCharCode(blob[i]);
     }
     if (fileTypeString !== ".FIT") {
-      callback("Missing '.FIT' in header", {});
-      if (!this.options.force) {
-        return;
+      const error = new Error("Missing '.FIT' in header");
+      if (this.options.force) {
+        throw error;
+      } else {
+        console.error(error);
       }
     }
 
@@ -79,153 +267,49 @@ export default class FitParser {
       }
     }
 
+    /**
+     * End file validations
+     */
+
     const fitObj: any = {};
     fitObj.protocolVersion = protocolVersion;
     fitObj.profileVersion = profileVersion;
 
-    const sessions = [];
-    const laps = [];
-    const records = [];
-    const events = [];
-    const hrv = [];
-    const devices = [];
-    const applications = [];
-    const fieldDescriptions = [];
-    const dive_gases = [];
-    const course_points = [];
-    const sports = [];
-    const monitors = [];
-    const stress = [];
-    const definitions = [];
-    const file_ids = [];
-    const monitor_info = [];
-    const lengths = [];
-
-    let tempLaps = [];
-    let tempLengths = [];
-    let tempRecords = [];
-
-    let loopIndex = headerLength;
-    const messageTypes: any = [];
-    const developerFields: any = [];
-
     const isModeCascade = this.options.mode === "cascade";
     const isCascadeNeeded = isModeCascade || this.options.mode === "both";
 
-    let startDate, lastStopTimestamp;
-    let pausedTime = 0;
+    const recordReader = readRecord({
+      blob,
+      options: this.options,
+    });
 
-    while (loopIndex < crcStart) {
-      const {
-        nextIndex,
-        messageType,
-        message = {},
-      } = readRecord(
-        blob,
-        messageTypes,
-        developerFields,
-        loopIndex,
-        this.options,
-        startDate,
-        pausedTime
-      );
-      loopIndex = nextIndex;
+    const {
+      applications,
+      devices,
+      events,
+      fieldDescriptions,
+      hrv,
+      sessions,
+      sports,
 
-      switch (messageType) {
-        case "lap":
-          if (isCascadeNeeded) {
-            message.records = tempRecords;
-            tempRecords = [];
-            tempLaps.push(message);
-            message.lengths = tempLengths;
-            tempLengths = [];
-          }
-          laps.push(message);
-          break;
-        case "session":
-          if (isCascadeNeeded) {
-            message.laps = tempLaps;
-            tempLaps = [];
-          }
-          sessions.push(message);
-          break;
-        case "event":
-          if (message.event === "timer") {
-            if (message.event_type === "stop_all") {
-              lastStopTimestamp = message.timestamp;
-            } else if (message.event_type === "start" && lastStopTimestamp) {
-              pausedTime += (message.timestamp - lastStopTimestamp) / 1000;
-            }
-          }
-          events.push(message);
-          break;
-        case "length":
-          if (isCascadeNeeded) {
-            tempLengths.push(message);
-          }
-          lengths.push(message);
-          break;
-        case "hrv":
-          hrv.push(message);
-          break;
-        case "record":
-          if (!startDate) {
-            startDate = message.timestamp;
-            message.elapsed_time = 0;
-            message.timer_time = 0;
-          }
-          records.push(message);
-          if (isCascadeNeeded) {
-            tempRecords.push(message);
-          }
-          break;
-        case "field_description":
-          fieldDescriptions.push(message);
-          break;
-        case "device_info":
-          devices.push(message);
-          break;
-        case "developer_data_id":
-          applications.push(message);
-          break;
-        case "dive_gas":
-          dive_gases.push(message);
-          break;
-        case "course_point":
-          course_points.push(message);
-          break;
-        case "sport":
-          sports.push(message);
-          break;
-        case "file_id":
-          if (message) {
-            file_ids.push(message);
-          }
-          break;
-        case "definition":
-          if (message) {
-            definitions.push(message);
-          }
-          break;
-        case "monitoring":
-          monitors.push(message);
-          break;
-        case "monitoring_info":
-          monitor_info.push(message);
-          break;
-        case "stress_level":
-          stress.push(message);
-          break;
-        case "software":
-          fitObj.software = message;
-          break;
-        default:
-          if (messageType !== "") {
-            fitObj[messageType] = message;
-          }
-          break;
-      }
-    }
+      laps,
+      lengths,
+      records,
+      dive_gases,
+      course_points,
+      monitors,
+      stress,
+      file_ids,
+      monitor_info,
+      definitions,
+      workout_step,
+    } = generateParsedFitObject({
+      fitObj,
+      isCascadeNeeded,
+      recordReader,
+      crcStart,
+      headerLength,
+    });
 
     if (isCascadeNeeded) {
       fitObj.activity = fitObj.activity || {};
@@ -256,8 +340,9 @@ export default class FitParser {
       fitObj.file_ids = file_ids;
       fitObj.monitor_info = monitor_info;
       fitObj.definitions = definitions;
+      fitObj.workout_step = workout_step;
     }
 
-    callback(null, fitObj);
+    return fitObj;
   }
 }
