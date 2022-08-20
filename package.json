@@ -55,7 +55,7 @@
     "test:watch:update": "vitest -w -u",
     "typecheck": "tsc",
     "typecheck:watch": "yarn run tsc --watch",
-    "release:patch": "yarn build && yarn version --patch && yarn npm publish"
+    "release:patch": "yarn build && yarn version --patch && yarn publish"
   },
   "dependencies": {
     "buffer": "^5.1.0"
