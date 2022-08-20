@@ -1,7 +1,10 @@
 # fit-file-parser
 
 > Parse your .FIT files easily, directly from JS.
-> Written in ES6. (Hope to change)
+
+NOTE: This is a fork of https://github.com/pierremtb/easy-fit, which has been forked multiple times. Big thanks to the initial creators for building out the initial version of this library.
+
+Given my large-scale refactoring to TypeScript, I decided to maintain a separate/permanent fork so as to not be blocked by upstream maintainers.
 
 ## Install
 
