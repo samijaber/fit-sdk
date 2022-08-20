@@ -37,14 +37,15 @@
       "email": "jabersami@gmail.com"
     }
   ],
-  "main": "dist/fit-parser.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "directories": {},
   "scripts": {
-    "build": "esbuild src/fit-parser.ts --bundle --platform=node --outdir=dist",
+    "build": "yarn run tsc --project tsconfig.build.json",
     "ci:build": "yarn run build",
     "ci:lint": "yarn run prettier:check",
     "ci:test": "yarn run test",
-    "ci:typecheck": "yarn run typecheck",
+    "ci:typecheck": "yarn run tsc:check",
     "coverage": "vitest run --coverage",
     "prettier": "prettier --write .",
     "prettier:check": "prettier --check .",
@@ -52,8 +53,8 @@
     "test:update": "vitest -u",
     "test:watch": "vitest -w",
     "test:watch:update": "vitest -w -u",
-    "typecheck": "tsc",
-    "typecheck:watch": "yarn run tsc --watch",
+    "tsc:check": "tsc --noEmit",
+    "tsc:check:watch": "yarn run tsc --watch",
     "release:patch": "yarn build && yarn version patch && yarn npm publish"
   },
   "dependencies": {
