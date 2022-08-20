@@ -1,20 +1,20 @@
 {
-  "name": "@samijaber/fit-parser",
+  "name": "@samijaber/fit-sdk",
   "version": "1.9.6",
-  "description": "Parse your .FIT files easily, directly from JS (Garmin, Polar, Suunto)",
+  "description": "Unofficial JavaScript SDK for Garmin's .FIT file protocol",
   "keywords": [
     "fit",
     "ant",
     "garmin",
     "parse"
   ],
-  "homepage": "https://github.com/samijaber/fit-parser",
+  "homepage": "https://github.com/samijaber/fit-sdk",
   "bugs": {
-    "url": "https://github.com/samijaber/fit-parser"
+    "url": "https://github.com/samijaber/fit-sdk"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/samijaber/fit-parser.git"
+    "url": "git+ssh://git@github.com/samijaber/fit-sdk.git"
   },
   "license": "MIT",
   "author": {
