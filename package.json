@@ -1,6 +1,6 @@
 {
   "name": "@samijaber/fit-sdk",
-  "version": "1.9.6",
+  "version": "1.9.7",
   "description": "Unofficial JavaScript SDK for Garmin's .FIT file protocol",
   "keywords": [
     "fit",

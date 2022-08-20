@@ -39,9 +39,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@samijaber/fit-parser@workspace:.":
+"@samijaber/fit-sdk@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@samijaber/fit-parser@workspace:."
+  resolution: "@samijaber/fit-sdk@workspace:."
   dependencies:
     "@types/node": ^18.0.5
     buffer: ^5.1.0
