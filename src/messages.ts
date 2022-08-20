@@ -1,5 +1,5 @@
 import { getMessageName, FitMessageNumber, FIT } from "./fit";
-import { Attributes } from "./types";
+import type { Attributes } from "./types";
 
 export function getFitMessage<N extends FitMessageNumber>(messageNum: N) {
   return {

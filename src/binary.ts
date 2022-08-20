@@ -1,7 +1,7 @@
 import { Fit, FIT, FitMessageNumber, FitTypes, FitTypesKey } from "./fit";
 import { getFitMessage, getFitMessageBaseType } from "./messages";
 import { Buffer } from "buffer";
-import { FitParserOptions, Unit } from "./types";
+import type { FitParserOptions, Unit } from "./types";
 
 export function addEndian(littleEndian: boolean | undefined, bytes: any[]) {
   let result = 0;

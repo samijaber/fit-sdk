@@ -4,7 +4,7 @@ import {
   readRecord,
   RecordReader,
 } from "./binary";
-import { FitParserOptions } from "./types";
+import type { FitParserOptions } from "./types";
 
 const generateParsedFitObject = ({
   fitObj,

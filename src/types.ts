@@ -1,4 +1,4 @@
-import { Fit } from "./fit";
+import type { Fit } from "./fit";
 export interface Attributes {
   field: string;
   type: string;
