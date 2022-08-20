@@ -1,6 +1,7 @@
 {
   "name": "@samijaber/fit-parser",
-  "version": "1.9.3",
+  "version": "1.9.4",
+  "private": false,
   "description": "Parse your .FIT files easily, directly from JS (Garmin, Polar, Suunto)",
   "keywords": [
     "fit",
@@ -54,7 +55,7 @@
     "test:watch:update": "vitest -w -u",
     "typecheck": "tsc",
     "typecheck:watch": "yarn run tsc --watch",
-    "release:patch": "yarn build && yarn version --patch && yarn publish"
+    "release:patch": "yarn build && yarn version patch && yarn npm publish"
   },
   "dependencies": {
     "buffer": "^5.1.0"
