@@ -1,6 +1,6 @@
-# fit-file-parser
+# fit-sdk
 
-> Parse your .FIT files easily, directly from JS.
+An unofficial implementation of the FIT SDK for Garmin's `.fit` file protocol: https://developer.garmin.com/fit/overview/
 
 NOTE: This is a fork of https://github.com/pierremtb/easy-fit, which has been forked multiple times. Big thanks to the initial creators for building out the initial version of this library.
 
@@ -9,7 +9,7 @@ Given my large-scale refactoring to TypeScript, I decided to maintain a separate
 ## Install
 
 ```
-$ npm install @samijaber/fit-parser
+$ npm install @samijaber/fit-sdk
 ```
 
 ## How to use
