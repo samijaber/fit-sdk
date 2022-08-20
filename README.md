@@ -9,7 +9,7 @@ Given my large-scale refactoring to TypeScript, I decided to maintain a separate
 ## Install
 
 ```
-$ npm install fit-file-parser --save
+$ npm install @samijaber/fit-parser
 ```
 
 ## How to use
